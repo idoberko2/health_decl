@@ -7,9 +7,11 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "amqplib": "^0.6.0",
     "dotenv": "^8.2.0",
     "nightmare": "^3.0.2",
     "nightmare-screenshot-selector": "^1.0.2",
-    "node-telegram-bot-api": "^0.50.0"
+    "node-telegram-bot-api": "^0.50.0",
+    "rascal": "^10.2.6"
   }
 }

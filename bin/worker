@@ -1,13 +1,41 @@
 require('dotenv').config();
-const fs = require('fs');
+const Broker = require('rascal').BrokerAsPromised;
+const rabbitConfig = require('../src/business/rabbit_config');
+const {
+    JOBS_SUB_PENDING,
+    JOBS_PUB_COMPLETED,
+    JOBS_PUB_FAILED,
+} = require('../src/business/consts');
 const scrape = require('../src/business/scrape');
 
-const username = process.env.HEALTH_USERNAME;
-const password = process.env.HEALTH_PASSWORD;
+(async () => {
+    try {
+        const broker = await Broker.create(rabbitConfig);
+        broker.on('error', console.error);
 
-scrape(username, password)
-    .then((data) => {
-        fs.writeFileSync('screen.png', data);
-        console.log("WOW");
-    })
-    .catch(err => console.error('OOPS', err));
+        // Consume a message
+        const subscription = await broker.subscribe(JOBS_SUB_PENDING);
+        subscription.on('message', async (message, content, ackOrNack) => {
+            const { chatId, username, password } = content;
+            try {
+                const img = await scrape(username, password);
+                const successPub = await broker.publish(JOBS_PUB_COMPLETED, {
+                    chatId,
+                    imgData: img.toString('binary'),
+                });
+                successPub.on('error', console.error);
+            } catch (err) {
+                console.error(err);
+                const failPub = await broker.publish(JOBS_PUB_FAILED, {
+                    chatId,
+                    err,
+                });
+                failPub.on('error', console.error);
+            } finally {
+                ackOrNack();
+            }
+        }).on('error', console.error);
+    } catch (err) {
+        console.error(err);
+    }
+})();

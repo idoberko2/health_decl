@@ -1,54 +1,89 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const scrape = require('../src/business/scrape');
+const Broker = require('rascal').BrokerAsPromised;
+const rabbitConfig = require('../src/business/rabbit_config');
+const {
+    JOBS_PUB_PENDING,
+    JOBS_SUB_COMPLETED,
+    JOBS_SUB_FAILED,
+} = require('../src/business/consts');
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.HEALTH_TELEGRAM_BOT_TOKEN;
 
 // Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, {polling: true});
+const bot = new TelegramBot(token, { polling: true });
 
 const instructions = 'למילוי הצהרת בריאות שלחו לי את הפקודה הבאה:\n\n/fill username password';
 
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-  
+
     bot.sendMessage(chatId, 'ברוכים הבאים!\n' + instructions);
-  });
+});
 
-bot.onText(/\/fill ([^\s]+)\s([^\s]+)/, (msg, match) => {
-    const chatId = msg.chat.id;
-    const username = match[1];
-    const password = match[2];
+(async () => {
+    try {
+        const broker = await Broker.create(rabbitConfig);
+        broker.on('error', console.error);
 
-    bot.sendMessage(chatId, 'קיבלתי');
+        bot.onText(/\/fill ([^\s]+)\s([^\s]+)/, async (msg, match) => {
+            const chatId = msg.chat.id;
+            const username = match[1];
+            const password = match[2];
 
-    const timer = setInterval(() => {
-        bot.sendMessage(chatId, 'בעבודה... ✍️');
-    }, 7000);
+            bot.sendMessage(chatId, 'קיבלתי');
 
-    scrape(username, password)
-        .then((data) => {
-            bot.sendPhoto(chatId, data);
-        })
-        .catch(err => {
+            setTimeout(() => {
+                bot.sendMessage(chatId, 'בעבודה... ✍️');
+            }, 5000);
+
+            const jobsPub = await broker.publish(JOBS_PUB_PENDING, {
+                chatId,
+                username,
+                password,
+            });
+            jobsPub.on('error', console.error);
+        });
+
+        // success consumer
+        const successSub = await broker.subscribe(JOBS_SUB_COMPLETED);
+        successSub.on('message', async (message, content, ackOrNack) => {
+            const { chatId, imgData } = content;
+
+            try {
+                await bot.sendPhoto(chatId, Buffer.from(imgData, 'binary'));
+            } catch (err) {
+                console.error('An error occurred');
+            } finally {
+                ackOrNack();
+            }
+        }).on('error', console.error);
+
+        // failure consumer
+        const failedSub = await broker.subscribe(JOBS_SUB_FAILED);
+        failedSub.on('message', async (message, content, ackOrNack) => {
+            const { chatId, err } = content;
+
             bot.sendMessage(chatId, 'קרתה שגיאה 😢');
             console.error(err);
-        })
-        .finally(() => {
-            clearInterval(timer);
-        });
-  });
+
+            ackOrNack();
+        }).on('error', console.error);
+    } catch (err) {
+        console.error(err);
+    }
+})();
 
 // Listen for any kind of message. There are different kinds of
 // messages.
 bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
+    const chatId = msg.chat.id;
 
-  if (msg.text && (msg.text.startsWith('/start') || msg.text.startsWith('/fill'))) {
-      return;
-  }
+    if (msg.text && (msg.text.startsWith('/start') || msg.text.startsWith('/fill'))) {
+        return;
+    }
 
-  // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'מצטער, לא יודע מה לעשות עם זה 🤷🏻‍♂️\n' + instructions);
+    // send a message to the chat acknowledging receipt of their message
+    bot.sendMessage(chatId, 'מצטער, לא יודע מה לעשות עם זה 🤷🏻‍♂️\n' + instructions);
 });
