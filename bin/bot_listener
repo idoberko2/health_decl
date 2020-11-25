@@ -1,0 +1,54 @@
+require('dotenv').config();
+const TelegramBot = require('node-telegram-bot-api');
+const scrape = require('../src/business/scrape');
+
+// replace the value below with the Telegram token you receive from @BotFather
+const token = process.env.HEALTH_TELEGRAM_BOT_TOKEN;
+
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, {polling: true});
+
+const instructions = 'למילוי הצהרת בריאות שלחו לי את הפקודה הבאה:\n\n/fill username password';
+
+bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+  
+    bot.sendMessage(chatId, 'ברוכים הבאים!\n' + instructions);
+  });
+
+bot.onText(/\/fill ([^\s]+)\s([^\s]+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const username = match[1];
+    const password = match[2];
+
+    bot.sendMessage(chatId, 'קיבלתי');
+
+    const timer = setInterval(() => {
+        bot.sendMessage(chatId, 'בעבודה... ✍️');
+    }, 7000);
+
+    scrape(username, password)
+        .then((data) => {
+            bot.sendPhoto(chatId, data);
+        })
+        .catch(err => {
+            bot.sendMessage(chatId, 'קרתה שגיאה 😢');
+            console.error(err);
+        })
+        .finally(() => {
+            clearInterval(timer);
+        });
+  });
+
+// Listen for any kind of message. There are different kinds of
+// messages.
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+
+  if (msg.text && (msg.text.startsWith('/start') || msg.text.startsWith('/fill'))) {
+      return;
+  }
+
+  // send a message to the chat acknowledging receipt of their message
+  bot.sendMessage(chatId, 'מצטער, לא יודע מה לעשות עם זה 🤷🏻‍♂️\n' + instructions);
+});

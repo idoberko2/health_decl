@@ -7,7 +7,9 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "dotenv": "^8.2.0",
     "nightmare": "^3.0.2",
-    "nightmare-screenshot-selector": "^1.0.2"
+    "nightmare-screenshot-selector": "^1.0.2",
+    "node-telegram-bot-api": "^0.50.0"
   }
 }

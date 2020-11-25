@@ -5,7 +5,7 @@ Nightmare.action('screenshotSelector', screenshotSelector)
 
 async function scrape(username, password) {
     const nightmare = Nightmare({
-        show: true,
+        // show: true,
         gotoTimeout: 60000,
     });
 
