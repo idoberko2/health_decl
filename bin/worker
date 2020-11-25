@@ -1,0 +1,12 @@
+const fs = require('fs');
+const scrape = require('../src/business/scrape');
+
+const username = process.env.HEALTH_USERNAME;
+const password = process.env.HEALTH_PASSWORD;
+
+scrape(username, password)
+    .then((data) => {
+        fs.writeFileSync('screen.png', data);
+        console.log("WOW");
+    })
+    .catch(err => console.error('OOPS', err));

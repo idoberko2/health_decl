@@ -1,0 +1,13 @@
+{
+  "name": "health_decl",
+  "version": "1.0.0",
+  "description": "Automate MOE health declerations",
+  "main": "bin/bot_listener",
+  "author": "Ido Berkovich <idoberko2@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "nightmare": "^3.0.2",
+    "nightmare-screenshot-selector": "^1.0.2"
+  }
+}
