@@ -13,7 +13,7 @@ async function scrape(username, password) {
     const kidContainerIds = await nightmare
         .viewport(360, 1024)
         .goto(url)
-        .wait(2000)
+        .wait(() => document.querySelector('input[type=button][value="מילוי הצהרת בריאות מקוונת"]') != null)
         .click('input[type=button][value="מילוי הצהרת בריאות מקוונת"]')
         .wait(() => document.querySelector('button[data-login-tab="user-pass-login"]') != null)
         .wait(500)
