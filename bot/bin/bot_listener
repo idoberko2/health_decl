@@ -1,12 +1,12 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const Broker = require('rascal').BrokerAsPromised;
-const rabbitConfig = require('../src/business/rabbit_config');
+const rabbitConfig = require('../src/rabbit_config');
 const {
     JOBS_PUB_PENDING,
     JOBS_SUB_COMPLETED,
     JOBS_SUB_FAILED,
-} = require('../src/business/consts');
+} = require('../src/consts');
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.HEALTH_TELEGRAM_BOT_TOKEN;

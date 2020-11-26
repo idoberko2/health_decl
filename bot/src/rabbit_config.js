@@ -1,6 +1,6 @@
 module.exports = {
     vhosts: {
-        '/': {
+        '/health_decl': {
             connection: {
                 url: process.env.RABBITMQ_URL,
             },

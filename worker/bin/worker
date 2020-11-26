@@ -1,12 +1,12 @@
 require('dotenv').config();
 const Broker = require('rascal').BrokerAsPromised;
-const rabbitConfig = require('../src/business/rabbit_config');
+const rabbitConfig = require('../src/rabbit_config');
 const {
     JOBS_SUB_PENDING,
     JOBS_PUB_COMPLETED,
     JOBS_PUB_FAILED,
-} = require('../src/business/consts');
-const scrape = require('../src/business/scrape');
+} = require('../src/consts');
+const scrape = require('../src/scrape');
 
 (async () => {
     try {

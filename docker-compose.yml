@@ -1,0 +1,21 @@
+version: "3.5"
+services:
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:latest
+    hostname: health_decl
+    ports:
+      - "5672:5672"
+  bot:
+    container_name: bot
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    build:
+      context: ./bot
+  worker:
+    container_name: worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    build:
+      context: ./worker
+    command: 'node /app/bin/worker'

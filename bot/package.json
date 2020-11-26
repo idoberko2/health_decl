@@ -1,0 +1,15 @@
+{
+  "name": "health_decl",
+  "version": "1.0.0",
+  "description": "Automate MOE health declerations",
+  "main": "bin/bot_listener",
+  "author": "Ido Berkovich <idoberko2@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "amqplib": "^0.6.0",
+    "dotenv": "^8.2.0",
+    "node-telegram-bot-api": "^0.50.0",
+    "rascal": "^10.2.6"
+  }
+}
