@@ -15,7 +15,6 @@ RUN yarn install --frozen-lockfile
 
 # Copy the rest of the files
 COPY bin /app/bin
-COPY src /app/src
 COPY rabbit_config.js /app
 COPY consts.js /app
 
