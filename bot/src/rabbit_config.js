@@ -33,7 +33,7 @@ module.exports = {
             subscriptions: {
                 jobs_pending_sub: {
                     queue: 'jobs_pending_q',
-                    prefecth: 1,
+                    prefetch: 1,
                 },
                 jobs_completed_sub: {
                     queue: 'jobs_completed_q',
