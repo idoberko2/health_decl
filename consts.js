@@ -5,6 +5,5 @@ module.exports = Object.freeze({
     JOBS_SUB_COMPLETED: 'jobs_completed_sub',
     JOBS_PUB_COMPLETED: 'jobs_completed_pub',
 
-    JOBS_SUB_FAILED: 'jobs_failed_sub',
-    JOBS_PUB_FAILED: 'jobs_failed_pub',
+    JOBS_SUB_FAILED: 'dead_letters_sub',
 });

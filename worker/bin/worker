@@ -1,11 +1,10 @@
 require('dotenv').config();
 const Broker = require('rascal').BrokerAsPromised;
-const rabbitConfig = require('../src/rabbit_config');
+const rabbitConfig = require('../rabbit_config');
 const {
     JOBS_SUB_PENDING,
     JOBS_PUB_COMPLETED,
-    JOBS_PUB_FAILED,
-} = require('../src/consts');
+} = require('../consts');
 const scrape = require('../src/scrape');
 
 (async () => {
@@ -24,16 +23,14 @@ const scrape = require('../src/scrape');
                     imgData: img.toString('binary'),
                 });
                 successPub.on('error', console.error);
+                ackOrNack();
             } catch (err) {
                 console.error(err);
-                const failPub = await broker.publish(JOBS_PUB_FAILED, {
-                    chatId,
-                    err,
-                });
-                failPub.on('error', console.error);
-            } finally {
-                ackOrNack();
+                ackOrNack(err, broker.config.recovery.deferred_retry);
             }
+        }).on('redeliveries_exceeded', function(err, message, ackOrNack) {
+            console.error('Redeliveries Exceeded', err.message)
+            ackOrNack(err, broker.config.recovery.dead_letter)
         }).on('error', console.error);
     } catch (err) {
         console.error(err);

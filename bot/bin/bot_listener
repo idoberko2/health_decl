@@ -1,12 +1,13 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const Broker = require('rascal').BrokerAsPromised;
-const rabbitConfig = require('../src/rabbit_config');
+const Rascal = require('rascal');
+const Broker = Rascal.BrokerAsPromised;
+const rabbitConfig = require('../rabbit_config');
 const {
     JOBS_PUB_PENDING,
     JOBS_SUB_COMPLETED,
     JOBS_SUB_FAILED,
-} = require('../src/consts');
+} = require('../consts');
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.HEALTH_TELEGRAM_BOT_TOKEN;
@@ -24,7 +25,7 @@ bot.onText(/\/start/, (msg) => {
 
 (async () => {
     try {
-        const broker = await Broker.create(rabbitConfig);
+        const broker = await Broker.create(Rascal.withDefaultConfig(rabbitConfig));
         broker.on('error', console.error);
 
         bot.onText(/\/fill ([^\s]+)\s([^\s]+)/, async (msg, match) => {
