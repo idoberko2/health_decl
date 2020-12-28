@@ -33,17 +33,14 @@ bot.onText(/\/start/, (msg) => {
             const username = match[1];
             const password = match[2];
 
-            bot.sendMessage(chatId, 'קיבלתי');
-
-            setTimeout(() => {
-                bot.sendMessage(chatId, 'בעבודה... ✍️');
-            }, 5000);
+            bot.sendMessage(chatId, 'קיבלתי, בעבודה... ✍️');
 
             const jobsPub = await broker.publish(JOBS_PUB_PENDING, {
                 chatId,
                 username,
                 password,
             });
+            console.debug('published message for chatId: ' + chatId);
             jobsPub.on('error', console.error);
         });
 

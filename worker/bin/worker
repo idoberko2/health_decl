@@ -16,6 +16,7 @@ const scrape = require('../src/scrape');
         const subscription = await broker.subscribe(JOBS_SUB_PENDING);
         subscription.on('message', async (message, content, ackOrNack) => {
             const { chatId, username, password } = content;
+            console.debug('received message from chatId: ' + chatId);
             try {
                 const img = await scrape(username, password);
                 const successPub = await broker.publish(JOBS_PUB_COMPLETED, {
@@ -24,7 +25,9 @@ const scrape = require('../src/scrape');
                 });
                 successPub.on('error', console.error);
                 ackOrNack();
+                console.debug('successfully handled message from chatId: ' + chatId);
             } catch (err) {
+                console.error('error handling message from chatId: ' + chatId);
                 console.error(err);
                 ackOrNack(err, broker.config.recovery.deferred_retry);
             }
